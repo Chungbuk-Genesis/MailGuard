@@ -26,6 +26,7 @@ curl -X POST http://localhost:8080/api/admin/import/all
 실행 후 http://localhost:8080/api/url/check?url=https://naver.com 
         같은 형태로 도메인 넣으면 --> 문제 있는지 검사 일단 됩니다
             다만 아직 db 내 내용들은 반영되지 않는 것 같아요
+            
 ---------------------------------------------------
 
 URL Blocker
@@ -61,5 +62,6 @@ BlockedDomainRepository
 
 service 내
 UrlSecurityService.java
+
 -------------------------------------------------------------
 
