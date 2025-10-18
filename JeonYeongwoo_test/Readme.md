@@ -1,6 +1,6 @@
 데이터 업데이트
 
-application.properties 내 mySQL 아이디 및 비밀번호 입력
+0. application.properties 내 mySQL 아이디 및 비밀번호 입력
 
 1. mysql 쿼리 실행
 CREATE DATABASE IF NOT EXISTS MaliciousDomain CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
