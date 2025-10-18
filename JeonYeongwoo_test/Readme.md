@@ -1,4 +1,7 @@
 데이터 업데이트
+
+application.properties 내 mySQL 아이디 및 비밀번호 입력
+
 1. mysql 쿼리 실행
 CREATE DATABASE IF NOT EXISTS MaliciousDomain CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE MaliciousDomain;
@@ -23,9 +26,10 @@ curl -X POST http://localhost:8080/api/admin/import/all
 
   inserted 여부 관련 문장 나오면 정상적으로 동작 한 거에요
 
-실행 후 http://localhost:8080/api/url/check?url=https://naver.com 
-        같은 형태로 도메인 넣으면 --> 문제 있는지 검사 일단 됩니다
-            다만 아직 db 내 내용들은 반영되지 않는 것 같아요
+실행 후 
+http://localhost:8080/api/url/check?url=https://naver.com << 위험 유무 판별
+http://localhost:8080/api/url/check?url=https://{url} << url 위치에 접속 원하는 url 입력 시 차단알림 표시 
+
             
 ---------------------------------------------------
 
