@@ -11,8 +11,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.http.MediaType;
+
 import java.net.URI;
 import java.util.Map;
+
+
 
 // http://localhost:8080/api/url/check?url=https://naver.com 같은 형태로 인풋 넣어서 확인 가능
 
@@ -33,9 +37,25 @@ public class UrlValidationController {
     
     @GetMapping("/redirect")
     public ResponseEntity<?> safeRedirect(@RequestParam String url) {
-        if (!urlSecurityService.isSafeUrl(url)) {
-            return ResponseEntity.badRequest()
-                    .body("차단된 URL입니다: " + url);
+    	if (!urlSecurityService.isSafeUrl(url)) {
+            String message = """
+                <html>
+                <head><meta charset='UTF-8'></head>
+                <body>
+                    <script>
+                        window.onload = function() {
+                            alert('%s 은(는) 악성 URL로 확인되어 접속이 차단되었습니다.');
+                            window.location.href = '/warning'; // 차단 안내 페이지 등으로 이동
+                        };
+                    </script>
+                </body>
+                </html>
+                """.formatted(url);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.TEXT_HTML);
+
+            return new ResponseEntity<>(message, headers, HttpStatus.BAD_REQUEST);
         }
         
         HttpHeaders headers = new HttpHeaders();
