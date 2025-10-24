@@ -67,17 +67,22 @@ public class VirusTotalService {
 
     //DB(table name : virus_total_data)에 데이터 저장
     public void saveReport(ReportDto savedDto){
-        VirusTotalReport report = new VirusTotalReport();
-        report.setMd5(savedDto.getMd5());
-        report.setSha256(savedDto.getSHA256());
-        report.setMalicious(savedDto.getMalicious());
-        report.setMeaningfulName(savedDto.getMeaningfulName());
-        report.setSuspicious(savedDto.getSuspicious());
-        report.setHarmless(savedDto.getHarmless());
-        report.setUndetected(savedDto.getUndetected());
-        report.setLastAnalysisDate(savedDto.getLastAnalysisDate());
 
-        reportRepository.save(report);
+        boolean alreadyExists = reportRepository.existsBySha256(savedDto.getSHA256());
+
+        if(!alreadyExists){
+            VirusTotalReport report = new VirusTotalReport();
+            report.setMd5(savedDto.getMd5());
+            report.setSha256(savedDto.getSHA256());
+            report.setMalicious(savedDto.getMalicious());
+            report.setMeaningfulName(savedDto.getMeaningfulName());
+            report.setSuspicious(savedDto.getSuspicious());
+            report.setHarmless(savedDto.getHarmless());
+            report.setUndetected(savedDto.getUndetected());
+            report.setLastAnalysisDate(savedDto.getLastAnalysisDate());
+
+            reportRepository.save(report);
+        }
     }
 
 }
