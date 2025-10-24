@@ -17,6 +17,7 @@
 - IDE : Intellij
 
 
-
+---
 ### 실행화면
 ![첨부파일 스캔](https://github.com/sim4110/MailGuard/blob/main/SimSuMin_test/filescan.png)
+
