@@ -1,5 +1,19 @@
 데이터 업데이트
 
+실행환경
+jdk 버전 java version "22.0.2" 
+개발 툴 -Spring Tool Suite 버전 - spring-tools-for-eclipse-4.32.0.RELEASE-e4.37.0-win32.win32.x86_64
+    설정 
+        Type : Maven / Packaging : Jar
+        Java Version : 21 / Language : Java
+        Group : com.example   
+        ...
+        package : com.example.urlsecurity
+
+    Dependency 설정 : Spring Web /  Lombok /  Spring Boot DevTools
+참조해 주시면 좋을 것 같습니다
+
+
 0. application.properties 내 mySQL 아이디 및 비밀번호 입력
 
 1. mysql 쿼리 실행
