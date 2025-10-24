@@ -1,10 +1,249 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Gmail REST Client</title>
+    <style>
+        body { font-family: sans-serif; padding: 2em; }
+        #email-container { margin-top: 2em; border: 1px solid #ccc; padding: 1em; border-radius: 8px; }
+        #login-btn, #fetch-btn { padding: 10px 15px; font-size: 16px; cursor: pointer; }
+        #error { color: red; }
+
+        /* 첨부파일 항목 스타일 */
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        /* 검사 버튼 */
+        .check-btn {
+            font-size: 12px;
+            padding: 3px 8px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+        /* 비밀번호 입력창 스타일 */
+        .password-input {
+            font-size: 12px;
+            padding: 3px;
+            margin-left: 5px;
+            width: 100px;
+        }
+        /* 검사 결과 영역 (컨테이너) */
+        .scan-status {
+            font-size: 12px;
+            margin-left: 10px;
+            padding-left: 10px;
+            border-left: 2px solid #eee;
+        }
+        /* 검사 결과 개별 라인 */
+        .report-line {
+            margin-bottom: 2px;
+        }
+        /* 위험 (악성, 암호 오류 등) */
+        .status-malicious {
+            color: red;
+            font-weight: bold;
+        }
+        /* 안전 */
+        .status-safe {
+            color: green;
+        }
+        /* 중립 (리포트 없음 등) */
+        .status-neutral {
+            color: #555;
+        }
+    </style>
 </head>
 <body>
 
+<h1>Gmail API, Google OAuth login Test</h1>
+<a id="login-btn" href="/login/google">1. Google 계정으로 로그인</a>
+<br><br>
+<button id="fetch-btn">2. 최신 메일 가져오기</button>
+
+<div id="email-container" style="display:none;">
+    <h3 id="subject"></h3>
+    <p><strong>From:</strong> <span id="from"></span></p>
+    <hr>
+    <div id="body"></div>
+    <h4>첨부파일:</h4>
+    <ul id="attachments"></ul>
+</div>
+<p id="error"></p>
+
+<script>
+    document.getElementById('fetch-btn').addEventListener('click', async () => {
+        const emailContainer = document.getElementById('email-container');
+        const errorEl = document.getElementById('error');
+        emailContainer.style.display = 'none';
+        errorEl.textContent = '';
+
+        try {
+            // 1. 최신 이메일 정보 가져오기
+            const response = await fetch('/api/latest-email');
+
+            // 1-1. 로그인 안 된 경우 (401)
+            if (response.status === 401) {
+                errorEl.textContent = '로그인이 필요합니다. 먼저 로그인 버튼을 눌러주세요.';
+                return;
+            }
+            // 1-2. 기타 오류
+            if (!response.ok) {
+                throw new Error('Failed to fetch email. Status: ' + response.status);
+            }
+
+            const email = await response.json();
+
+            // 2. 이메일 정보 화면에 표시
+            document.getElementById('subject').textContent = '제목: ' + email.subject;
+            document.getElementById('from').textContent = email.from;
+            document.getElementById('body').innerHTML = email.body; // HTML 본문 그대로 삽입
+
+            // 3. 첨부파일 목록 처리
+            const attachmentsList = document.getElementById('attachments');
+            attachmentsList.innerHTML = ''; // 기존 목록 초기화
+
+            if (email.attachments && email.attachments.length > 0) {
+
+                // 3-1. 각 첨부파일에 대해 항목(li) 생성
+                email.attachments.forEach(att => {
+                    const li = document.createElement('li');
+                    li.className = 'attachment-item';
+
+                    // 3-1-1. 파일명
+                    const fileNameSpan = document.createElement('span');
+                    fileNameSpan.textContent = att.filename + ' - ';
+                    li.appendChild(fileNameSpan);
+
+                    // 3-1-2. 다운로드 링크
+                    const a = document.createElement('a');
+                    const downloadUrl = `/api/attachment/download?msgId=${encodeURIComponent(att.messageId)}&attId=${encodeURIComponent(att.attachmentId)}&filename=${encodeURIComponent(att.filename)}`;
+                    a.href = downloadUrl;
+                    a.textContent = 'Download';
+                    li.appendChild(a);
+
+                    // 3-1-3. VirusTotal 검사 버튼
+                    const checkButton = document.createElement('button');
+                    checkButton.textContent = 'VirusTotal 검사';
+                    checkButton.className = 'check-btn';
+                    // 검사에 필요한 데이터 저장
+                    checkButton.dataset.msgId = att.messageId;
+                    checkButton.dataset.attId = att.attachmentId;
+                    checkButton.dataset.filename = att.filename;
+                    li.appendChild(checkButton);
+
+                    // 3-1-4. 비밀번호 입력창
+                    const passwordInput = document.createElement('input');
+                    passwordInput.type = 'password';
+                    passwordInput.className = 'password-input';
+                    passwordInput.placeholder = '암호 (zip인 경우)';
+                    li.appendChild(passwordInput);
+
+                    // 3-1-5. 검사 결과 표시 영역 (div)
+                    const statusDisplay = document.createElement('div');
+                    statusDisplay.className = 'scan-status';
+                    li.appendChild(statusDisplay);
+
+                    // 3-1-6. 검사 버튼 클릭 이벤트 리스너
+                    checkButton.addEventListener('click', async (event) => {
+                        const button = event.target;
+                        const msgId = button.dataset.msgId;
+                        const attId = button.dataset.attId;
+                        const filename = button.dataset.filename;
+
+                        // 버튼 기준으로 형제 DOM 요소 찾기
+                        const pInput = button.nextElementSibling; // passwordInput
+                        const statusDisplayDiv = pInput.nextElementSibling; // statusDisplay
+
+                        const password = pInput.value; // 비밀번호 값 가져오기
+
+                        try {
+                            statusDisplayDiv.innerHTML = '<span>검사 중...</span>';
+                            statusDisplayDiv.className = 'scan-status';
+
+                            // 4. 백엔드 스캔 API 호출 (password 포함)
+                            let scanUrl = `/api/attachment/scan?msgId=${encodeURIComponent(msgId)}&attId=${encodeURIComponent(attId)}&filename=${encodeURIComponent(filename)}`;
+                            if (password) {
+                                scanUrl += `&password=${encodeURIComponent(password)}`;
+                            }
+
+                            const scanResponse = await fetch(scanUrl);
+
+                            // 4-1. 로그인 오류 처리
+                            if (scanResponse.status === 401) {
+                                statusDisplayDiv.innerHTML = '<span class="status-malicious">오류: 로그인이 필요합니다.</span>';
+                                return;
+                            }
+                            // 4-2. 기타 서버 오류
+                            if (!scanResponse.ok) {
+                                throw new Error('Scan failed. Status: ' + scanResponse.status);
+                            }
+
+                            // 5. 스캔 결과(배열) 처리
+                            const reports = await scanResponse.json();
+                            statusDisplayDiv.innerHTML = ''; // "검사 중..." 제거
+
+                            if (reports.length === 0) {
+                                statusDisplayDiv.innerHTML = '<span class="status-neutral">압축 파일 내에 검사할 파일이 없습니다.</span>';
+                            }
+
+                            // 5-1. 각 리포트(zip 내부 파일 포함) 순회
+                            reports.forEach(report => {
+                                let resultText = '';
+                                let resultClass = '';
+                                const displayName = report.meaningfulName || 'Unknown File';
+
+                                // 5-2. 백엔드에서 보낸 특수 값(N/A)으로 상태 분기
+                                if (report.lastAnalysisDate === "N/A") {
+                                    if (displayName.includes("암호 필요")) {
+                                        resultText = `<b>${displayName}</b>`;
+                                        resultClass = 'status-malicious'; // 위험으로 표시
+                                    } else if (displayName.includes("암호 틀림")) {
+                                        resultText = `<b>${displayName}</b>`;
+                                        resultClass = 'status-malicious'; // 위험으로 표시
+                                    } else {
+                                        // "Report Not Found" (리포트 없음)
+                                        resultText = `<b>${displayName}</b>: VirusTotal 리포트 없음`;
+                                        resultClass = 'status-neutral'; // 중립으로 표시
+                                    }
+                                } else {
+                                    resultText = `<b>${displayName}</b>: [Malicious: ${report.malicious}, Suspicious: ${report.suspicious}]`;
+                                    if (report.malicious > 0 || report.suspicious > 0) {
+                                        resultClass = 'status-malicious'; // 위험
+                                    } else {
+                                        resultClass = 'status-safe'; // 안전
+                                    }
+                                    // 5-3. 정상 리포트
+                                }
+
+                                // 5-4. 결과 라인(div) 생성 및 추가
+                                const reportLine = document.createElement('div');
+                                reportLine.className = 'report-line ' + resultClass;
+                                reportLine.innerHTML = resultText;
+                                statusDisplayDiv.appendChild(reportLine);
+                            });
+
+                        } catch (err) {
+                            console.error('Scan error:', err);
+                            statusDisplayDiv.innerHTML = '<span class="status-malicious">검사 오류 발생</span>';
+                        }
+                    });
+
+                    attachmentsList.appendChild(li);
+                });
+            } else {
+                // 3-2. 첨부파일 없는 경우
+                attachmentsList.innerHTML = '<li>첨부파일 없음</li>';
+            }
+
+            emailContainer.style.display = 'block';
+
+        } catch (error) {
+            console.error('Error fetching email:', error);
+            errorEl.textContent = '메일을 가져오는 중 오류가 발생했습니다. 콘솔을 확인하세요.';
+        }
+    });
+</script>
 </body>
 </html>

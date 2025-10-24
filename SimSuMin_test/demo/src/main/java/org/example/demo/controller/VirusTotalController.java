@@ -16,10 +16,13 @@ public class VirusTotalController {
     public VirusTotalController(VirusTotalService virusTotalService) {
         this.virusTotalService = virusTotalService;
     }
-
+    // 메일 첨부파일 확인
     // http://localhost:8080/api/virustotal/files/d5e974a3386fc99d2932756ca165a451 이런식으로 테스트 가능.
     @GetMapping("/files/{id}")
     public Mono<ReportDto> getFileReport(@PathVariable String id) {
         return virusTotalService.getFileReport(id);
     }
+    
+    // 메일 첨부파일 결과 출력
+
 }
