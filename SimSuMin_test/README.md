@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ### 구현된 기능
 
 ---
@@ -52,5 +51,3 @@
 ![첨부파일 스캔](https://github.com/sim4110/MailGuard/blob/main/SimSuMin_test/filescan.png)
 
 
-
->>>>>>> d8e42b0a0708c55ba1299b9ed555486cee8665c9
