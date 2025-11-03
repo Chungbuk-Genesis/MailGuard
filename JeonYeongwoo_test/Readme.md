@@ -1,25 +1,20 @@
 데이터 업데이트
 
-실행환경
-jdk 버전 java version "22.0.2" 
-개발 툴 -Spring Tool Suite 버전 - spring-tools-for-eclipse-4.32.0.RELEASE-e4.37.0-win32.win32.x86_64
-    설정 
-        Type : Maven / Packaging : Jar
-        Java Version : 21 / Language : Java
-        Group : com.example   
-        ...
-        package : com.example.urlsecurity
-
-    Dependency 설정 : Spring Web /  Lombok /  Spring Boot DevTools
-참조해 주시면 좋을 것 같습니다
+실행환경<br>
+--------------------------------------
+jdk 버전 : java version "22.0.2" <br>
+개발 툴 : Spring Tool Suite 4 (spring-tools-for-eclipse-4.32.0.RELEASE-e4.37.0-win32.win32.x86_64)
 
 
+실행 방법<br>
+--------------------------------------
 0. application.properties 내 mySQL 아이디 및 비밀번호 입력
 
 1. mysql 쿼리 실행
 CREATE DATABASE IF NOT EXISTS MaliciousDomain CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE MaliciousDomain;
 
+```
 CREATE TABLE blocked_domain (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     scheme VARCHAR(10) NOT NULL,           -- 'HTTP', 'HTTPS', 'BOTH' 등
@@ -32,10 +27,10 @@ CREATE TABLE blocked_domain (
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_0900_ai_ci;
+```
+3. springboot 실행
 
-2. springboot 실행
-
-3. cmd 에서 다음 문장 입력
+4. cmd 에서 다음 문장 입력
 curl -X POST http://localhost:8080/api/admin/import/all
 
   inserted 여부 관련 문장 나오면 정상적으로 동작 한 거에요
