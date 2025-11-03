@@ -29,7 +29,7 @@ public class ImportAdminController {
 
     /** 특정 파일만 임포트 (임의 경로 허용) */
     @PostMapping("/one")
-    public Map<String, Integer> importOne(@RequestParam String path) throws Exception {
+    public Map<String, Integer> importOne(@RequestParam("path") String path) throws Exception {
         return importService.importOne(path);
     }
 }
