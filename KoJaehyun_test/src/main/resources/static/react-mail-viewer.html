@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailGuard - 메일 분석</title>
+    
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .tab.active {
+            background: #4285f4;
+            color: white;
+        }
+        
+        .tab.naver.active {
+            background: #03c75a;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .stat {
+            flex: 1;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .stat.dangerous .stat-number { color: #d93025; }
+        .stat.suspicious .stat-number { color: #f9ab00; }
+        .stat.safe .stat-number { color: #1e8e3e; }
+        
+        .email-list {
+            padding: 20px;
+        }
+        
+        .email-item {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .email-item:last-child {
+            border-bottom: none;
+        }
+        
+        .email-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .email-from {
+            font-size: 14px;
+            color: #5f6368;
+        }
+        
+        .risk-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .risk-badge.SAFE {
+            background: #e6f4ea;
+            color: #1e8e3e;
+        }
+        
+        .risk-badge.SUSPICIOUS {
+            background: #fef7e0;
+            color: #f9ab00;
+        }
+        
+        .risk-badge.DANGEROUS {
+            background: #fce8e6;
+            color: #d93025;
+        }
+        
+        .email-subject {
+            font-size: 16px;
+            font-weight: 500;
+            color: #202124;
+            margin-bottom: 5px;
+        }
+        
+        .email-content {
+            font-size: 14px;
+            color: #5f6368;
+            line-height: 1.5;
+        }
+        
+        .email-date {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+        
+        .loading {
+            padding: 40px;
+            text-align: center;
+            color: #666;
+        }
+        
+        .error {
+            padding: 20px;
+            background: #fce8e6;
+            color: #d93025;
+            border-radius: 5px;
+            margin: 20px;
+        }
+        
+        .empty {
+            padding: 40px;
+            text-align: center;
+            color: #999;
+        }
+        
+        .reload-btn {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .reload-btn:hover {
+            background: #3367d6;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function EmailItem({ email, provider }) {
+            return (
+                <div className="email-item">
+                    <div className="email-header">
+                        <div className="email-from">{email.from}</div>
+                        <span className={`risk-badge ${email.riskLevel}`}>
+                            {email.riskLevel} ({email.riskScore}점)
+                        </span>
+                    </div>
+                    <div className="email-subject">{email.subject}</div>
+                    <div className="email-content">
+                        {email.content?.substring(0, 100)}...
+                    </div>
+                    <div className="email-date">
+                        {new Date(email.receivedDate).toLocaleString('ko-KR')}
+                    </div>
+                </div>
+            );
+        }
+
+        function App() {
+            const [provider, setProvider] = useState('gmail');
+            const [emails, setEmails] = useState([]);
+            const [stats, setStats] = useState({ dangerous: 0, suspicious: 0, safe: 0 });
+            const [loading, setLoading] = useState(false);
+            const [error, setError] = useState(null);
+
+            const loadEmails = async (prov) => {
+                setLoading(true);
+                setError(null);
+
+                const url = prov === 'gmail'
+                    ? 'http://localhost:8080/api/gmail/fetch-demo'
+                    : 'http://localhost:8080/api/naver/fetch-demo';
+
+                try {
+                    const res = await fetch(url);
+                    const data = await res.json();
+
+                    if (data.success) {
+                        setEmails(data.emails || []);
+                        setStats(data.statistics || { dangerous: 0, suspicious: 0, safe: 0 });
+                    } else {
+                        setError(data.error);
+                    }
+                } catch (err) {
+                    setError(err.message);
+                }
+                setLoading(false);
+            };
+
+            const switchTab = (prov) => {
+                setProvider(prov);
+                loadEmails(prov);
+            };
+
+            useEffect(() => {
+                loadEmails('gmail');
+            }, []);
+
+            return (
+                <div className="container">
+                    <div className="header">
+                        <h1>MailGuard - 메일 분석</h1>
+                        
+                        <div className="tabs">
+                            <button
+                                className={`tab gmail ${provider === 'gmail' ? 'active' : ''}`}
+                                onClick={() => switchTab('gmail')}
+                            >
+                                Gmail
+                            </button>
+                            <button
+                                className={`tab naver ${provider === 'naver' ? 'active' : ''}`}
+                                onClick={() => switchTab('naver')}
+                            >
+                                Naver
+                            </button>
+                        </div>
+
+                        <button className="reload-btn" onClick={() => loadEmails(provider)}>
+                            새로고침
+                        </button>
+
+                        <div className="stats">
+                            <div className="stat dangerous">
+                                <span className="stat-number">{stats.dangerous}</span>
+                                <span className="stat-label">위험</span>
+                            </div>
+                            <div className="stat suspicious">
+                                <span className="stat-number">{stats.suspicious}</span>
+                                <span className="stat-label">의심</span>
+                            </div>
+                            <div className="stat safe">
+                                <span className="stat-number">{stats.safe}</span>
+                                <span className="stat-label">안전</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {loading && <div className="loading">메일 불러오는 중...</div>}
+                    {error && <div className="error">오류: {error}</div>}
+                    
+                    {!loading && !error && emails.length === 0 && (
+                        <div className="empty">메일이 없습니다.</div>
+                    )}
+
+                    <div className="email-list">
+                        {emails.map((email, idx) => (
+                            <EmailItem key={idx} email={email} provider={provider} />
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
