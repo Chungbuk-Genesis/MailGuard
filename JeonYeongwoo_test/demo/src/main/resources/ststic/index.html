@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Gmail REST Client</title>
+    <style>
+        body { font-family: sans-serif; padding: 2em; }
+        #email-container { margin-top: 2em; border: 1px solid #ccc; padding: 1em; border-radius: 8px; }
+        #login-btn, #fetch-btn { padding: 10px 15px; font-size: 16px; cursor: pointer; }
+        #error { color: red; }
+    </style>
+</head>
+<body>
+<h1>Gmail API, Google OAuth login Test</h1>
+<a id="login-btn" href="/login/google">1. Google 계정으로 로그인</a>
+<br><br>
+<button id="fetch-btn">2. 최신 메일 가져오기</button>
+
+<div id="email-container" style="display:none;">W
+    <h3 id="subject"></h3>
+    <p><strong>From:</strong> <span id="from"></span></p>
+    <hr>
+    <div id="body"></div>
+    <h4>첨부파일:</h4>
+    <ul id="attachments"></ul>
+</div>
+<p id="error"></p>
+
+<script>
+    document.getElementById('fetch-btn').addEventListener('click', async () => {
+        const emailContainer = document.getElementById('email-container');
+        const errorEl = document.getElementById('error');
+        emailContainer.style.display = 'none';
+        errorEl.textContent = '';
+
+        try {
+            const response = await fetch('/api/latest-email');
+            if (response.status === 401) {
+                errorEl.textContent = '로그인이 필요합니다. 먼저 로그인 버튼을 눌러주세요.';
+                return;
+            }
+            if (!response.ok) {
+                throw new Error('Failed to fetch email. Status: ' + response.status);
+            }
+
+            const email = await response.json();
+
+            document.getElementById('subject').textContent = '제목: ' + email.subject;
+            document.getElementById('from').textContent = email.from;
+            document.getElementById('body').innerHTML = email.body;
+
+            const attachmentsList = document.getElementById('attachments');
+            attachmentsList.innerHTML = ''; // Clear previous list
+            if (email.attachments && email.attachments.length > 0) {
+                email.attachments.forEach(att => {
+                    const li = document.createElement('li');
+                    const a = document.createElement('a');
+                    a.href = att.downloadUrl;
+                    a.textContent = att.filename;
+                    a.target = '_blank';
+                    li.appendChild(a);
+                    attachmentsList.appendChild(li);
+                });
+            } else {
+                attachmentsList.innerHTML = '<li>첨부파일 없음</li>';
+            }
+
+            emailContainer.style.display = 'block';
+
+        } catch (error) {
+            console.error('Error fetching email:', error);
+            errorEl.textContent = '메일을 가져오는 중 오류가 발생했습니다. 콘솔을 확인하세요.';
+        }
+    });
+</script>
+</body>
+</html>
