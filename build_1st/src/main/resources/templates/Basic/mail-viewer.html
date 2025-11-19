@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailGuard - 통합 메일 분석</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            background: #e5e7eb;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .tab:hover {
+            background: #d1d5db;
+        }
+        
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .tab.gmail.active {
+            background: #ea4335;
+        }
+        
+        .tab.naver.active {
+            background: #03c75a;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            flex: 1;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .stat-card.safe { background: #10b981; }
+        .stat-card.suspicious { background: #f59e0b; }
+        .stat-card.dangerous { background: #ef4444; }
+        
+        .stat-number {
+            font-size: 36px;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .email-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .email-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 5px solid #667eea;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .email-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .email-card.dangerous {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+        
+        .email-card.suspicious {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+        
+        .email-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .email-from {
+            font-size: 16px;
+            color: #4b5563;
+            font-weight: 600;
+        }
+        
+        .risk-badge {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .risk-badge.SAFE { background: #10b981; }
+        .risk-badge.SUSPICIOUS { background: #f59e0b; }
+        .risk-badge.DANGEROUS { background: #ef4444; }
+        
+        .email-subject {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        .email-content {
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .email-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: #9ca3af;
+            padding-top: 15px;
+            border-top: 1px solid #e5e7eb;
+            flex-wrap: wrap;
+        }
+        
+        .patterns {
+            margin-top: 15px;
+        }
+        
+        .pattern-tag {
+            display: inline-block;
+            padding: 5px 12px;
+            background: #fee2e2;
+            color: #dc2626;
+            border-radius: 15px;
+            font-size: 13px;
+            margin: 3px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .error {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .reload-btn {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-top: 15px;
+        }
+        
+        .reload-btn:hover {
+            background: #5568d3;
+        }
+        
+        .provider-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .provider-badge.gmail {
+            background: #ea4335;
+            color: white;
+        }
+        
+        .provider-badge.naver {
+            background: #03c75a;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📧 MailGuard - 통합 메일 분석</h1>
+            <p>Gmail과 Naver 메일 실시간 피싱 탐지</p>
+            
+            <div class="tabs">
+                <button class="tab gmail active" onclick="switchTab('gmail')">
+                    📬 Gmail
+                </button>
+                <button class="tab naver" onclick="switchTab('naver')">
+                    📮 Naver
+                </button>
+            </div>
+            
+            <button class="reload-btn" onclick="loadCurrentTab()">🔄 새로고침</button>
+            
+            <div class="stats" id="stats"></div>
+        </div>
+        
+        <div id="loading" class="loading">
+            메일 분석 중...
+        </div>
+        
+        <div id="emailList" class="email-list"></div>
+    </div>
+
+    <script>
+        let currentProvider = 'gmail';
+        
+        function switchTab(provider) {
+            currentProvider = provider;
+            
+            // 탭 스타일 변경
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`.tab.${provider}`).classList.add('active');
+            
+            // 메일 로드
+            loadEmails(provider);
+        }
+        
+        function loadCurrentTab() {
+            loadEmails(currentProvider);
+        }
+        
+        async function loadEmails(provider) {
+            const loading = document.getElementById('loading');
+            const emailList = document.getElementById('emailList');
+            const stats = document.getElementById('stats');
+            
+            loading.style.display = 'block';
+            emailList.innerHTML = '';
+            stats.innerHTML = '';
+            
+            // API 엔드포인트 설정
+            let apiUrl = '';
+            if (provider === 'gmail') {
+                apiUrl = 'http://localhost:8080/api/gmail/fetch-demo';
+            } else {
+                apiUrl = 'http://localhost:8080/api/naver/fetch-demo';
+            }
+            
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                
+                loading.style.display = 'none';
+                
+                if (!data.success) {
+                    emailList.innerHTML = `
+                        <div class="error">
+                            ❌ ${data.error || '메일을 가져올 수 없습니다.'}
+                            ${data.solution ? '<br><br>' + JSON.stringify(data.solution, null, 2) : ''}
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 통계 표시
+                const statistics = data.statistics || {dangerous: 0, suspicious: 0, safe: 0};
+                stats.innerHTML = `
+                    <div class="stat-card dangerous">
+                        <span class="stat-number">${statistics.dangerous}</span>
+                        <span>위험</span>
+                    </div>
+                    <div class="stat-card suspicious">
+                        <span class="stat-number">${statistics.suspicious}</span>
+                        <span>의심</span>
+                    </div>
+                    <div class="stat-card safe">
+                        <span class="stat-number">${statistics.safe}</span>
+                        <span>안전</span>
+                    </div>
+                `;
+                
+                // 메일 목록 표시
+                const emails = data.emails || [];
+                
+                if (emails.length === 0) {
+                    emailList.innerHTML = `
+                        <div class="email-card">
+                            <p style="text-align: center; color: #6b7280;">
+                                📭 메일이 없습니다.
+                            </p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                emails.forEach(email => {
+                    const card = document.createElement('div');
+                    card.className = `email-card ${(email.riskLevel || 'SAFE').toLowerCase()}`;
+                    
+                    const patterns = email.detectedPatterns && email.detectedPatterns.length > 0
+                        ? email.detectedPatterns.map(p => `<span class="pattern-tag">${p}</span>`).join('')
+                        : '';
+                    
+                    const providerBadgeClass = provider === 'gmail' ? 'gmail' : 'naver';
+                    const providerName = provider === 'gmail' ? 'Gmail' : 'Naver';
+                    
+                    card.innerHTML = `
+                        <span class="provider-badge ${providerBadgeClass}">${providerName}</span>
+                        <div class="email-header">
+                            <div class="email-from">📨 ${email.from || 'Unknown'}</div>
+                            <span class="risk-badge ${email.riskLevel || 'SAFE'}">
+                                ${email.riskLevel || 'SAFE'} (${email.riskScore || 0}점)
+                            </span>
+                        </div>
+                        <div class="email-subject">${email.subject || '(제목 없음)'}</div>
+                        <div class="email-content">${email.content || '(내용 없음)'}</div>
+                        ${patterns ? `<div class="patterns">${patterns}</div>` : ''}
+                        <div class="email-meta">
+                            <span>📅 ${email.receivedDate ? new Date(email.receivedDate).toLocaleString('ko-KR') : '날짜 없음'}</span>
+                            <span>📎 첨부파일: ${email.hasAttachments ? '있음' : '없음'}</span>
+                            ${email.extractedUrls && email.extractedUrls.length > 0 
+                                ? `<span>🔗 URL: ${email.extractedUrls.length}개</span>` 
+                                : ''}
+                        </div>
+                    `;
+                    
+                    emailList.appendChild(card);
+                });
+                
+            } catch (error) {
+                loading.style.display = 'none';
+                emailList.innerHTML = `
+                    <div class="error">
+                        ❌ 오류 발생: ${error.message}
+                        <br><br>
+                        서버가 실행 중인지 확인해주세요.
+                    </div>
+                `;
+            }
+        }
+        
+        // 페이지 로드시 Gmail 자동 실행
+        loadEmails('gmail');
+    </script>
+</body>
+</html>
