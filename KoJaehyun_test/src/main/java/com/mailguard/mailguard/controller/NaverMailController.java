@@ -1,5 +1,4 @@
 package com.mailguard.mailguard.controller;
-
 import com.mailguard.mailguard.dto.EmailDto;
 import com.mailguard.mailguard.service.NaverImapService;
 import lombok.RequiredArgsConstructor;
@@ -129,9 +128,89 @@ public class NaverMailController {
                         "method", "POST",
                         "path", "/api/naver/dangerous",
                         "description", "위험한 메일만 필터링"
+                ),
+                Map.of(
+                        "method", "GET",
+                        "path", "/api/naver/fetch-demo",
+                        "description", "Naver 메일 가져오기 데모 (GET 요청)"
                 )
         ));
         
+        help.put("setup", Map.of(
+                "step1", "네이버 로그인 → 내정보 → 보안설정",
+                "step2", "2단계 인증 활성화",
+                "step3", "애플리케이션 비밀번호 생성",
+                "step4", "코드에 이메일과 앱 비밀번호 입력"
+        ));
+        
         return ResponseEntity.ok(help);
+    }
+    
+    // ============== 새로 추가된 GET 엔드포인트 ==============
+    
+    @GetMapping("/fetch-demo")
+    public ResponseEntity<?> fetchDemo() {
+        try {
+            // ⚠️ 여기에 본인의 네이버 계정 정보를 입력하세요!
+            String email = "albert0827@naver.com";        
+            String appPassword = "P3V344CC7FRS";             
+            int maxEmails = 5;
+            
+            log.info("=== Naver 메일 가져오기 데모 시작 ===");
+            log.info("Email: {}", email);
+            
+            List<EmailDto> emails = naverImapService.fetchAndAnalyzeEmails(email, appPassword, maxEmails);
+            
+            long dangerousCount = emails.stream()
+                    .filter(e -> "DANGEROUS".equals(e.getRiskLevel()))
+                    .count();
+            long suspiciousCount = emails.stream()
+                    .filter(e -> "SUSPICIOUS".equals(e.getRiskLevel()))
+                    .count();
+            long safeCount = emails.stream()
+                    .filter(e -> "SAFE".equals(e.getRiskLevel()))
+                    .count();
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("provider", "Naver (데모)");
+            response.put("method", "IMAP");
+            response.put("authentication", "앱 비밀번호");
+            response.put("totalCount", emails.size());
+            response.put("statistics", Map.of(
+                    "dangerous", dangerousCount,
+                    "suspicious", suspiciousCount,
+                    "safe", safeCount
+            ));
+            response.put("emails", emails);
+            response.put("message", "✅ Naver 메일 분석 완료!");
+            
+            log.info("=== 분석 완료: 위험 {}, 의심 {}, 안전 {} ===", 
+                    dangerousCount, suspiciousCount, safeCount);
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            log.error("❌ Naver 메일 가져오기 실패", e);
+            
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("error", e.getMessage());
+            errorResponse.put("errorType", e.getClass().getSimpleName());
+            
+            if (e.getMessage() != null && e.getMessage().contains("Authentication")) {
+                errorResponse.put("solution", Map.of(
+                        "step1", "네이버 로그인 → 내정보 → 보안설정",
+                        "step2", "2단계 인증 활성화",
+                        "step3", "애플리케이션 비밀번호 생성",
+                        "step4", "생성된 16자리 비밀번호를 코드에 입력 (공백 제거)",
+                        "step5", "IMAP/SMTP 사용 설정 확인"
+                ));
+            } else {
+                errorResponse.put("solution", "코드의 email과 appPassword를 확인하세요.");
+            }
+            
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
     }
 }
