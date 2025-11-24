@@ -4,6 +4,8 @@
 Application.properties 파일의 설정을 아래와 같은 형태로 맞춰주세요요 
 
 ```
+openai.api.key= // 채워주세요
+
 spring.application.name=MailGuard
 spring.datasource.url=jdbc:mysql://localhost:3306/MailGuardDB
 spring.datasource.username= // 채워주세요
@@ -81,8 +83,6 @@ naver.demo.email= // 채워주세요
 naver.demo.app-password= // 채워주세요
 
 app.base-url=http://localhost:8080
-
-openai.api.key= // 채워주세요
 ```
 
 실행환경<br>
@@ -224,6 +224,7 @@ MailGuard
 
 ... 추후 업데이트 하겠습니다
 -------------------------------------------------------------
+
 
 
 
