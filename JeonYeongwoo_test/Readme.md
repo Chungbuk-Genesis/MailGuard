@@ -1,4 +1,8 @@
 # 필독 Application.properties 설정
+카카오톡에 공유한 credentials.json 파일은 포함되지 않았습니다 << resources 위치에 넣어주세요
+
+Application.properties 파일의 설정을 아래와 같은 형태로 맞춰주세요요 
+
 ```
 spring.application.name=MailGuard
 spring.datasource.url=jdbc:mysql://localhost:3306/MailGuardDB
@@ -218,7 +222,8 @@ MailGuard
     └── UserService.java
 ```
 
-
+... 추후 업데이트 하겠습니다
 -------------------------------------------------------------
+
 
 
