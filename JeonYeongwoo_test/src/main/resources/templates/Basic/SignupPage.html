@@ -2,9 +2,9 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Signup</title>
-    
-    <link type = "text/css" rel="stylesheet" href="/css/inputDesign.css">
 
+    <!-- 공통 CSS -->
+    <link rel="stylesheet" type="text/css" href="/css/inputDesign.css">
 
     <!-- 부트스트랩 코드-->
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,145 +13,168 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 
-
     <style>
-        .info {
-            border-radius : 10%;
+        /* EditProfile 양식과 통일 */
+        #submit {
+            display: block;
+            background-color: #939393;
+            color: white;
+            border-radius: 5px;
             font-size: 20px;
+            width: 20%;
+            height: 50px;
+            margin: 20px auto 0 auto;
         }
 
+        footer {
+            background-color: #f2f2f2;
+        }
     </style>
 </head>
 <body>
-       <!-- Navbar -->
-	   <nav class="navbar navbar-default"  >
-	             <div class="container">
-	             <div class= "navbar-header ">
-	                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-	                 <span class="icon-bar"></span>
-	                 <span class="icon-bar"></span>
-	                 <span class="icon-bar"></span>                        
-	                 </button>
-	                 <a class="navbar-brand" th:href="(${user != null}) ? @{/home} : @{/guest}">MailGuard</a>
-	             </div>
-
-	             <!-- 로그인 회원가입 버튼 -->
-	             <div class="buttons navbar-right">
-	   			  <ul class="nav navbar-nav" style="display: flex; align-items: center; height: 100%;">
-	   			    <li><a th:href="@{/login}">Login</a></li>
-	   			    <li style="margin-left: 10px;">
-	   			      <form th:action="@{/signup}" method="get" style="margin: 0;">
-	   			        <button type="submit" class="btn btn-default" style="margin: 0; padding: 6px 12px;">회원가입</button>
-	   			      </form>
-	   			    </li>
-	   			  </ul>
-	   			</div>
-	             </div>
-	         </nav>
-
-
-    <section id = "Input-container" class = "fluid-container " style="margin: auto; padding-top : 20px; width : 60%; 
-                height : 60%;  border-radius: 10px; border: 1px solid #c9c9c9;">
-        <h1 style = "text-align:center; color : #c9c9c9;">회원가입</h1>
-        <!-- 이메일 -->
-        
-        <form th:action="@{/signup}" method="post" th:object="${user}">
-        <div class ="Inputform">
-            <p class="info">
-                <span class = "glyphicon glyphicon-envelope"></span>
-                <span >Email : </span>
-                <input type="email" th:field="*{email}" required />
-            </p>
+<!-- Navbar -->
+<nav class="navbar navbar-default">
+    <div class="container">
+        <div class="navbar-header ">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand"
+               th:href="(${user != null}) ? @{/home} : @{/guest}">MailGuard</a>
         </div>
 
-        <!-- 비밀번호 -->
-        <div class ="Inputform">
-            <p class="info">
-                <span class = "glyphicon glyphicon-lock"></span>
-                <span >Password : </span>
-                <input type="password" th:field="*{password}" required /></p>
+        <!-- 로그인 / 회원가입 버튼 -->
+        <div class="buttons navbar-right">
+            <ul class="nav navbar-nav" style="display:flex;align-items:center;height:100%;">
+                <li><a th:href="@{/login}">Login</a></li>
+                <li style="margin-left:10px;">
+                    <form th:action="@{/signup}" method="get" style="margin:0;">
+                        <button type="submit" class="btn btn-default"
+                                style="margin:0;padding:6px 12px;">회원가입</button>
+                    </form>
+                </li>
+            </ul>
         </div>
+    </div>
+</nav>
 
-        <!-- 비밀번호 확인 -->
-        <div class ="Inputform">
-            <p class="info">
-                <!-- 비밀번호 확인 아이콘 **체크 기능 추가해서 glyphicon glyphicon-ok 로 바뀌어야 함. -->
-                <span class = "glyphicon glyphicon-remove" style = "color : red;"></span>
-                <span>Confirm Password : </span>
-                <input type="password" id="confirm_password"  required></p>
+<!-- Signup Form 영역 -->
+<section id="Input-container" class="fluid-container"
+         style="margin:auto; padding-top:20px; width:60%;
+                border-radius:10px; border:1px solid #c9c9c9;">
+    <div class="row">
+        <div class="col-sm-12">
+            <h2 style="text-align:center; color:#989898;">회원가입</h2>
         </div>
+    </div>
 
-        <!-- 유저명 -->
-        <div class ="Inputform">
-            <p class="info">
-                <span class = "glyphicon glyphicon-user"></span>
-                <span >Username : </span>
-                <input type="text" th:field="*{username}" required />
-            </p>
-        </div>
-
-
-
-        
-        <button id = "submit" type ="submit" class="btn btn-default">Sign Up</button><br>
-
-    </section>
-    
-
-
-    <script>
-        // 비밀번호 확인
-        const password = document.getElementById("password");
-        const confirm_password = document.getElementById("confirm_password");
-
-        function validatePassword(){
-            if(password.value != confirm_password.value) {
-                confirm_password.setCustomValidity("Passwords Don't Match");
-            } else {
-                confirm_password.setCustomValidity('');
-            }
-        }
-
-        password.onchange = validatePassword;
-        confirm_password.onkeyup = validatePassword;
-
-        
-
-</script>
-    
-    
-        <br><br><br><br>
-
-  <!--하단 관련정보-->
-    <footer class="container-fluid bg-3">
-        <h2 class="text-center">CONTACT</h2>
+    <form th:action="@{/signup}" method="post" th:object="${user}">
         <div class="row">
-          <div class="col-sm-5">
+            <div class="col-sm-1"></div>
+            <div class="col-sm-10"
+                 style="border-radius:10px; padding:20px 10% 30px 10%;">
+
+                <!-- 이메일 -->
+                <div class="form-group">
+                    <label>
+                        <span class="glyphicon glyphicon-envelope"></span>
+                        &nbsp;Email:
+                    </label>
+                    <input type="email" th:field="*{email}" class="form-control" required/>
+                </div>
+
+                <!-- 비밀번호 -->
+                <div class="form-group">
+                    <label>
+                        <span class="glyphicon glyphicon-lock"></span>
+                        &nbsp;Password:
+                    </label>
+                    <!-- id="password" 추가 (비밀번호 확인 JS용) -->
+                    <input type="password" th:field="*{password}" id="password"
+                           class="form-control" required/>
+                </div>
+
+                <!-- 비밀번호 확인 -->
+                <div class="form-group">
+                    <label>
+                        <span class="glyphicon glyphicon-lock"></span>
+                        &nbsp;Confirm Password:
+                    </label>
+                    <input type="password" id="confirm_password"
+                           class="form-control" required/>
+                </div>
+
+                <!-- 유저명 -->
+                <div class="form-group">
+                    <label>
+                        <span class="glyphicon glyphicon-user"></span>
+                        &nbsp;Username:
+                    </label>
+                    <input type="text" th:field="*{username}" class="form-control" required/>
+                </div>
+
+                <!-- 에러 메시지 (중복 등) -->
+                <div th:if="${error}" style="color:red; margin-top:10px;">
+                    <p th:text="${error}"></p>
+                </div>
+
+                <!-- 제출 버튼 -->
+                <button id="submit" type="submit" class="btn btn-default">Sign Up</button>
+            </div>
+            <div class="col-sm-1"></div>
+        </div>
+    </form>
+</section>
+
+<script>
+    // 비밀번호 확인
+    const password = document.getElementById("password");
+    const confirm_password = document.getElementById("confirm_password");
+
+    function validatePassword() {
+        if (password.value !== confirm_password.value) {
+            confirm_password.setCustomValidity("Passwords Don't Match");
+        } else {
+            confirm_password.setCustomValidity('');
+        }
+    }
+
+    password.onchange = validatePassword;
+    confirm_password.onkeyup = validatePassword;
+</script>
+
+<br><br><br><br>
+
+<!-- 하단 CONTACT -->
+<footer class="container-fluid bg-3">
+    <h2 class="text-center">CONTACT</h2>
+    <div class="row">
+        <div class="col-sm-5">
             <p>Contact us and we'll get back to you within 24 hours.</p>
             <p><span class="glyphicon glyphicon-map-marker"></span> Cheongju, South Korea</p>
             <p><span class="glyphicon glyphicon-phone"></span> +00 1515151515</p>
             <p><span class="glyphicon glyphicon-envelope"></span> myemail@something.com</p>
-            <p><a href = "example.html">For detailed info, click here</a></p>
-          </div>
-          <div class="col-sm-7">
+            <p><a href="example.html">For detailed info, click here</a></p>
+        </div>
+        <div class="col-sm-7">
             <div class="row">
-              <div class="col-sm-6 form-group">
-                <input class="form-control" id="name" name="name" placeholder="Name" type="text">
-              </div>
-              <div class="col-sm-6 form-group">
-				<input class="form-control" id="contact_email" name="contact_email" placeholder="Email" type="email">
-              </div>
+                <div class="col-sm-6 form-group">
+                    <input class="form-control" id="name" name="name" placeholder="Name" type="text">
+                </div>
+                <div class="col-sm-6 form-group">
+                    <input class="form-control" id="contact_email" name="contact_email" placeholder="Email" type="email">
+                </div>
             </div>
             <textarea class="form-control" id="comments" name="comments" placeholder="Comment" rows="5"></textarea><br>
             <div class="row">
-              <div class="col-sm-12 form-group">
-                <button class="btn btn-default pull-right" type="submit">Send</button>
-              </div>
+                <div class="col-sm-12 form-group">
+                    <button class="btn btn-default pull-right" type="submit">Send</button>
+                </div>
             </div>
-          </div>
         </div>
-    </footer>
-    
-
+    </div>
+</footer>
 </body>
 </html>

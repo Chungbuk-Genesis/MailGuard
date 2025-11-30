@@ -39,6 +39,9 @@ public class UserService {
         // System.out.println("비밀번호를 해시화합니다 ");
         String encodedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
+        
+        // 2-1. 생성일자 저장  2025-12-01 01:05
+        user.setCreatedAt(LocalDateTime.now());
 
         // 3. 이메일 미인증 상태로 저장
         // System.out.println("이메일을 저장합니다 ");
@@ -115,4 +118,18 @@ public class UserService {
 
         return "이메일 인증이 완료되었습니다. 이제 로그인할 수 있습니다.";
     }
+    
+    // 2025-12-01 유저 삭제 로직 추가
+	 // ✅ 유저 + 관련 이메일 인증 토큰 삭제
+	    @Transactional
+	    public void deleteUser(Integer userId) {
+	        User user = userRepository.findById(userId)
+	                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다. id=" + userId));
+	
+	        // 먼저 이 유저의 인증 토큰들 삭제
+	        tokenRepository.deleteAllByUser(user);
+	
+	        // 그 다음 유저 삭제
+	        userRepository.delete(user);
+	    }
 }

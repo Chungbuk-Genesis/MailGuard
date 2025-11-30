@@ -134,5 +134,25 @@ public class UserController {
         return "PersonalProfile/VerifyResultPage";
     }
     
+    // 2025-12-01 계정삭제 로직 추가
+    
+	// ✅ 계정 탈퇴
+	    @PostMapping("/delete-account")
+	    public String deleteAccount(HttpSession session) {
+	        User sessionUser = (User) session.getAttribute("user");
+	        if (sessionUser == null) {
+	            return "redirect:/login";
+	        }
+	
+	        // DB에서 유저 삭제
+	        userService.deleteUser(sessionUser.getId());
+	
+	        // 세션 비우기
+	        session.invalidate();
+	
+	        // 홈(또는 메인 페이지)로 이동
+	        return "redirect:/";
+	    }
+
     
 }
