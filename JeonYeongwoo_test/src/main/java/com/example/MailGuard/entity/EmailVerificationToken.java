@@ -3,6 +3,7 @@ package com.example.MailGuard.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+
 @Entity
 @Table(name = "email_verification_token")
 public class EmailVerificationToken {
@@ -70,4 +71,6 @@ public class EmailVerificationToken {
     public void setUsed(boolean used) {
         this.used = used;
     }
+   
+    
 }
