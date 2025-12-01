@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailGuard - 통합 메일 분석</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        .header {
+            background: white; padding: 30px; border-radius: 15px;
+            margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .header h1 { color: #667eea; font-size: 32px; margin-bottom: 10px; }
+
+        .tabs { display: flex; gap: 10px; margin-top: 20px; }
+        .tab {
+            flex: 1; padding: 15px; background: #e5e7eb; border: none;
+            border-radius: 10px; font-size: 18px; font-weight: bold;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .tab:hover { background: #d1d5db; }
+        .tab.active { background: #667eea; color: white; }
+        .tab.gmail.active { background: #ea4335; }
+        .tab.naver.active { background: #03c75a; }
+
+        .stats { display: flex; gap: 20px; margin-top: 20px; }
+        .stat-card {
+            flex: 1; padding: 20px; border-radius: 10px;
+            text-align: center; color: white; font-weight: bold;
+        }
+        .stat-card.safe { background: #10b981; }
+        .stat-card.suspicious { background: #f59e0b; }
+        .stat-card.dangerous { background: #ef4444; }
+        .stat-number { font-size: 36px; display: block; margin-bottom: 5px; }
+
+        .email-list { display: flex; flex-direction: column; gap: 15px; }
+
+        .email-card {
+            background: white; padding: 25px; border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-left: 5px solid #667eea;
+            transition: transform 0.2s;
+        }
+        .email-card.dangerous { border-left-color: #ef4444; background: #fef2f2; }
+        .email-card.suspicious { border-left-color: #f59e0b; background: #fffbeb; }
+
+        .email-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .email-from { font-size: 16px; color: #4b5563; font-weight: 600; }
+
+        .risk-badge {
+            padding: 8px 16px; border-radius: 20px; font-size: 14px;
+            font-weight: bold; color: white;
+        }
+        .risk-badge.SAFE { background: #10b981; }
+        .risk-badge.SUSPICIOUS { background: #f59e0b; }
+        .risk-badge.DANGEROUS { background: #ef4444; }
+
+        .email-subject { font-size: 20px; font-weight: bold; color: #1f2937; margin-bottom: 10px; }
+        .email-content { color: #6b7280; line-height: 1.6; margin-bottom: 15px; }
+
+        .email-meta {
+            display: flex; gap: 20px; font-size: 14px; color: #9ca3af;
+            padding-top: 15px; border-top: 1px solid #e5e7eb; flex-wrap: wrap; align-items: center;
+        }
+
+        /* 첨부파일 스타일 */
+        .attachment-btn {
+            background: #667eea; color: white; border: none; padding: 5px 15px;
+            border-radius: 15px; cursor: pointer; font-size: 13px;
+        }
+        .attachment-btn:hover { background: #5a6fd6; }
+
+        .attachment-list {
+            margin-top: 15px; background: #f3f4f6; padding: 15px; border-radius: 10px;
+            display: none;
+        }
+
+        .attachment-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: white; padding: 10px; margin-bottom: 8px; border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .att-actions { display: flex; gap: 8px; }
+
+        .btn-download {
+            text-decoration: none; background: #3b82f6; color: white;
+            padding: 5px 10px; border-radius: 5px; font-size: 12px;
+            display: inline-block;
+        }
+
+        .btn-scan {
+            background: #8b5cf6; color: white; border: none;
+            padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px;
+        }
+        .btn-scan:hover { background: #7c3aed; }
+
+        .scan-result-badge {
+            font-size: 12px; padding: 3px 8px; border-radius: 4px; color: white; margin-left: 5px;
+        }
+        .scan-safe { background: #10b981; }
+        .scan-malicious { background: #ef4444; }
+
+        .loading { text-align: center; padding: 50px; color: white; font-size: 20px; }
+        .reload-btn {
+            background: #667eea; color: white; padding: 12px 30px; border: none;
+            border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px;
+        }
+        .provider-badge {
+            display: inline-block; padding: 5px 15px; border-radius: 15px;
+            font-size: 14px; font-weight: bold; margin-bottom: 10px;
+        }
+        .provider-badge.gmail { background: #ea4335; color: white; }
+        .provider-badge.naver { background: #03c75a; color: white; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>📧 MailGuard - 통합 메일 분석</h1>
+        <p>Gmail과 Naver 메일 실시간 피싱 탐지</p>
+
+        <div class="tabs">
+            <button class="tab gmail active" onclick="switchTab('gmail')">📬 Gmail</button>
+            <button class="tab naver" onclick="switchTab('naver')">📮 Naver</button>
+        </div>
+
+        <button class="reload-btn" onclick="loadCurrentTab()">🔄 새로고침</button>
+        <div class="stats" id="stats"></div>
+    </div>
+
+    <div id="loading" class="loading">메일 분석 중...</div>
+    <div id="emailList" class="email-list"></div>
+</div>
+
+<script>
+    let currentProvider = 'gmail';
+    const BASE_URL = 'http://localhost:8080';
+
+    function switchTab(provider) {
+        currentProvider = provider;
+        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+        document.querySelector(`.tab.${provider}`).classList.add('active');
+        loadEmails(provider);
+    }
+
+    function loadCurrentTab() { loadEmails(currentProvider); }
+
+    // 헬퍼: 현재 탭에 따른 API 기본 경로 반환
+    function getApiBase() {
+        return currentProvider === 'gmail' ? '/api/gmail' : '/api/naver';
+    }
+
+    async function loadEmails(provider) {
+        const loading = document.getElementById('loading');
+        const emailList = document.getElementById('emailList');
+        const stats = document.getElementById('stats');
+
+        loading.style.display = 'block';
+        emailList.innerHTML = '';
+        stats.innerHTML = '';
+
+        // API 호출 경로 동적 설정
+        const apiUrl = `${BASE_URL}${getApiBase()}/fetch-demo`;
+
+        try {
+            const response = await fetch(apiUrl);
+            if (response.status === 401) {
+                loading.style.display = 'none';
+                // 네이버와 Gmail 로그인 안내 분기 처리
+                const loginMsg = provider === 'gmail'
+                    ? `<a href="${BASE_URL}/api/gmail/login">Google 로그인</a>`
+                    : `앱 비밀번호 인증 필요 (fetch-demo 코드 확인)`;
+
+                emailList.innerHTML = `<div class="error" style="background:white; padding:20px; border-radius:10px;">
+                        🔐 로그인이 필요합니다.<br>${loginMsg}
+                    </div>`;
+                return;
+            }
+            const data = await response.json();
+
+            loading.style.display = 'none';
+
+            if (!data.success) {
+                alert('메일 로드 실패: ' + data.error);
+                return;
+            }
+
+            // 통계 표시
+            const statData = data.statistics || {dangerous: 0, suspicious: 0, safe: 0};
+            stats.innerHTML = `
+                    <div class="stat-card dangerous"><span class="stat-number">${statData.dangerous}</span><span>위험</span></div>
+                    <div class="stat-card suspicious"><span class="stat-number">${statData.suspicious}</span><span>의심</span></div>
+                    <div class="stat-card safe"><span class="stat-number">${statData.safe}</span><span>안전</span></div>
+                `;
+
+            const emails = data.emails || [];
+            if (emails.length === 0) {
+                emailList.innerHTML = `<div class="email-card"><p style="text-align: center;">📭 메일이 없습니다.</p></div>`;
+                return;
+            }
+
+            emails.forEach(email => {
+                const card = document.createElement('div');
+                card.className = `email-card ${(email.riskLevel || 'SAFE').toLowerCase()}`;
+
+                const providerBadgeClass = provider === 'gmail' ? 'gmail' : 'naver';
+                const providerName = provider === 'gmail' ? 'Gmail' : 'Naver';
+
+                // messageId 필드 사용
+                const emailId = email.messageId;
+
+                card.innerHTML = `
+                        <span class="provider-badge ${providerBadgeClass}">${providerName}</span>
+                        <div class="email-header">
+                            <div class="email-from">📨 ${email.from || 'Unknown'}</div>
+                            <span class="risk-badge ${email.riskLevel || 'SAFE'}">
+                                ${email.riskLevel || 'SAFE'}
+                            </span>
+                        </div>
+                        <div class="email-subject">${email.subject || '(제목 없음)'}</div>
+                        <div class="email-content">${email.snippet || email.content || '(내용 없음)'}</div>
+
+                        <div class="email-meta">
+                            <span>📅 ${email.receivedDate ? new Date(email.receivedDate).toLocaleString('ko-KR') : '-'}</span>
+                            ${email.hasAttachments
+                    ? `<button class="attachment-btn" onclick="toggleAttachments('${emailId}', this)">📎 첨부파일 보기</button>`
+                    : '<span>📎 첨부파일 없음</span>'}
+                        </div>
+
+                        <!-- 첨부파일 영역 -->
+                        <div id="attachments-${emailId}" class="attachment-list">
+                            <div style="text-align:center;">첨부파일 목록을 불러오는 중...</div>
+                        </div>
+                    `;
+                emailList.appendChild(card);
+            });
+
+        } catch (error) {
+            loading.style.display = 'none';
+            emailList.innerHTML = `<div class="error" style="background:#fee2e2; padding:20px; border-radius:10px;">❌ 오류 발생: ${error.message}</div>`;
+        }
+    }
+
+    // --- 첨부파일 관련 기능 ---
+
+    async function toggleAttachments(messageId, btnElement) {
+        const container = document.getElementById(`attachments-${messageId}`);
+
+        if (container.style.display === 'block') {
+            container.style.display = 'none';
+            btnElement.textContent = '📎 첨부파일 보기';
+            return;
+        } else {
+            container.style.display = 'block';
+            btnElement.textContent = '📂 목록 닫기';
+        }
+
+        if (container.dataset.loaded === "true") return;
+
+        try {
+            // [수정됨] 현재 탭(Gmail/Naver)에 맞는 API 경로 사용
+            const apiBase = getApiBase();
+            const response = await fetch(`${BASE_URL}${apiBase}/attachments/${messageId}`);
+
+            if (!response.ok) throw new Error('목록 조회 실패');
+
+            const attachments = await response.json();
+
+            if (attachments.length === 0) {
+                container.innerHTML = '<div>실제 첨부파일을 찾을 수 없습니다.</div>';
+            } else {
+                container.innerHTML = '';
+                attachments.forEach(att => {
+                    const item = document.createElement('div');
+                    item.className = 'attachment-item';
+
+                    // [수정됨] 다운로드 및 검사 경로도 동적으로 변경
+                    const downloadUrl = `${BASE_URL}${apiBase}/attachment/download?msgId=${messageId}&attId=${att.attachmentId}&filename=${encodeURIComponent(att.filename)}`;
+
+                    item.innerHTML = `
+                            <span>📄 ${att.filename}</span>
+                            <div class="att-actions">
+                                <a href="${downloadUrl}" class="btn-download" target="_blank">⬇ 다운로드</a>
+                                <button class="btn-scan" onclick="scanFile('${messageId}', '${att.attachmentId}', '${att.filename}', this)">🛡 검사</button>
+                            </div>
+                        `;
+                    container.appendChild(item);
+                });
+            }
+            container.dataset.loaded = "true";
+
+        } catch (e) {
+            container.innerHTML = `<div style="color:red;">❌ 로드 실패: ${e.message}</div>`;
+        }
+    }
+
+    async function scanFile(messageId, attId, filename, btnElement) {
+        const originalText = btnElement.textContent;
+        let password = '';
+
+        // ZIP 파일 비밀번호 확인 로직
+        if (filename.toLowerCase().endsWith('.zip')) {
+            const input = prompt(`'${filename}'은(는) 압축 파일입니다.\n비밀번호가 걸려있다면 입력해주세요.\n(없다면 그냥 '확인'을 누르세요)`);
+            if (input === null) return;
+            password = input;
+        }
+
+        btnElement.textContent = '⏳ 검사 중...';
+        btnElement.disabled = true;
+
+        let resultBadge = btnElement.parentElement.querySelector('.scan-result-badge');
+        if (!resultBadge) {
+            resultBadge = document.createElement('span');
+            resultBadge.className = 'scan-result-badge';
+            btnElement.parentElement.appendChild(resultBadge);
+        }
+        resultBadge.style.display = 'none';
+
+        try {
+            const params = new URLSearchParams({
+                msgId: messageId,
+                attId: attId,
+                filename: filename,
+                password: password
+            });
+
+            // [수정됨] 현재 탭에 맞는 API 경로 사용
+            const apiBase = getApiBase();
+            const response = await fetch(`${BASE_URL}${apiBase}/attachment/scan?${params.toString()}`);
+            if (!response.ok) throw new Error('검사 요청 실패');
+
+            const reports = await response.json();
+
+            const maliciousCount = reports.reduce((acc, curr) => acc + curr.malicious, 0);
+
+            resultBadge.style.display = 'inline-block';
+            if (maliciousCount > 0) {
+                resultBadge.textContent = `🚨 위험 (${maliciousCount}건 탐지)`;
+                resultBadge.className = 'scan-result-badge scan-malicious';
+            } else if (reports.length > 0 && reports[0].meaningfulName.includes("분석 요청됨")) {
+                resultBadge.textContent = '⏳ 분석 요청됨 (잠시 후 재시도)';
+                resultBadge.className = 'scan-result-badge';
+                resultBadge.style.background = '#f59e0b';
+            } else {
+                resultBadge.textContent = '✅ 안전';
+                resultBadge.className = 'scan-result-badge scan-safe';
+            }
+
+        } catch (e) {
+            alert('검사 중 오류가 발생했습니다: ' + e.message);
+        } finally {
+            btnElement.textContent = originalText;
+            btnElement.disabled = false;
+        }
+    }
+
+    // 초기 실행
+    loadEmails('gmail');
+</script>
+</body>
+</html>
