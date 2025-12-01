@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Guest Index</title>
+    
+    <link type = "text/css" rel="stylesheet" href="/css/tempDesign.css">
+
+
+    <!-- 부트스트랩 코드-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <style>
+      .bg-1{
+            position: relative;
+            top : 0 ; left : 0 ; right : 0 ; 
+            height: 100vh;  ;
+            width: auto;
+            background-image: url('/assets/chess.jpg'); 
+            background-size: cover;             
+            background-position: center;        
+            background-repeat: no-repeat;    
+            
+        }
+
+        .todayBlunder{
+            border: 0px; 
+            text-align:left;
+            border-radius: 10px; 
+            height : 100%; 
+            width: 25%;
+            text-align: center
+            
+        }
+
+        #ranking{
+            font-size: 15px;
+        }
+
+        #ranking tr:nth-child(even){
+            background-color: #dcdcdc;
+        }
+
+        #ranking table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 20px;
+        }
+    
+        #ranking th, td {
+          padding: 10px;
+          border: 1px solid #ccc;
+          text-align: center;
+          border : 0px;
+        }
+    
+        #ranking th {
+          background-color: #f2f2f2;
+          
+        }
+        .abcd{
+          border : 0px;
+        }
+        div #col_1, #col_2{
+          display: inline-block;
+          vertical-align: top;
+          width: 50%;
+          border : 0px;
+        }
+
+        #board table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 20px;
+        }
+    
+        #board td:nth-child(2) {
+          text-align:left;
+        }
+
+        #board th, td {
+          padding: 10px;
+          border: 1px solid #ccc;
+          text-align: center;
+          border : 0px;
+        }
+    
+        #board th {
+          background-color: #f2f2f2;
+          
+        }
+        #board th:nth-child(2) {
+          text-align:left;
+        }
+        
+        .navbar-nav > li > form {
+  			display: flex;
+  			align-items: center; /* 세로 중앙 정렬 */
+  			margin: 0;            /* 기본 여백 제거 */
+  			padding: 0;           /* 필요시 패딩도 제거 */
+  			height: 100%;
+		}
+		
+		.image-container img {
+		  display: block;
+		  width: 300px;
+		  height: auto;
+		}
+		
+		.image-container .static {
+		  display: block;
+		}
+		
+		.image-container .animated {
+		  display: none;
+		}
+		
+		.image-container:hover .static {
+		  display: none;
+		}
+		
+		.image-container:hover .animated {
+		  display: block;
+		}
+    </style>
+</head>
+<body>
+    
+
+    
+    <div class="bg-1" >
+      <nav class="navbar navbar-default"  >
+          <div class="container">
+          <div class= "navbar-header ">
+              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>                        
+              </button>
+              <a class="navbar-brand" th:href="(${user != null}) ? @{/home} : @{/guest}">MailGuard</a>
+          </div>
+
+		  <!-- 로그인 회원가입 버튼 -->
+		            <div class="buttons navbar-right">
+		  			  <ul class="nav navbar-nav" style="display: flex; align-items: center; height: 100%;">
+		  			    <li>
+		  			      <a th:href = "@{/profile}">profile</a>
+		  			    </li>
+		  			    <li style="display: flex; align-items: center; margin-left: 10px;">
+		  			      <p style="margin: 0;">logined as: <span th:text="${user.username}"></span></p>
+		  			    </li>
+		  			    <li style="margin-left: 10px;">
+		  			      <a th:href="@{/logout}">Logout</a>
+		  			    </li>
+		  			  </ul>
+		  			</div>
+
+          </div>
+      </nav>
+
+      </div>
+
+      <br><br>
+    <!-- 중앙 컨텐츠 관련 -->
+
+    <br>
+	<p th:text="${message}"></p>
+
+  <!--하단 관련정보-->
+    <footer class="container-fluid bg-3">
+        <h2 class="text-center">CONTACT</h2>
+        <div class="row">
+          <div class="col-sm-5">
+            <p>Contact us and we'll get back to you within 24 hours.</p>
+            <p><span class="glyphicon glyphicon-map-marker"></span> Cheongju, South Korea</p>
+            <p><span class="glyphicon glyphicon-phone"></span> +00 1515151515</p>
+            <p><span class="glyphicon glyphicon-envelope"></span> myemail@something.com</p>
+            <p><a href = "example.html">For detailed info, click here</a></p>
+          </div>
+          <div class="col-sm-7">
+            <div class="row">
+              <div class="col-sm-6 form-group">
+                <input class="form-control" id="name" name="name" placeholder="Name" type="text" required>
+              </div>
+              <div class="col-sm-6 form-group">
+                <input class="form-control" id="email" name="email" placeholder="Email" type="email" required>
+              </div>
+            </div>
+            <textarea class="form-control" id="comments" name="comments" placeholder="Comment" rows="5"></textarea><br>
+            <div class="row">
+              <div class="col-sm-12 form-group">
+                <button class="btn btn-default pull-right" type="submit">Send</button>
+              </div>
+            </div>
+          </div>
+        </div>
+    </footer>
+  
+
+	
+    
+</body>
+</html>

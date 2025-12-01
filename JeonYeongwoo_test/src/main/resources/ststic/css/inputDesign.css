@@ -1,0 +1,101 @@
+/* login, newpost, signup 폼 공통 템플릿 */
+
+:root {
+    --back: rgb(236, 236, 236);
+}
+
+.bg-3 {
+    background-color: rgb(236, 236, 236);
+}
+
+/* ================================
+   입력 폼 공통 디자인 (중앙 정렬용 수정)
+   ================================ */
+
+.info {
+    border-radius: 10%;
+    font-size: 20px;
+    color: gray;
+    width: 100%;
+    margin: 0;
+
+    /* 🔥 왼쪽 padding 제거 → 중앙 정렬 방해 요소 제거 */
+    padding-left: 0;
+
+    /* 🔥 글자 자체도 중앙 정렬 */
+    text-align: center;
+}
+
+/* 입력 폼 공통 디자인 - 중앙 정렬 버전 */
+
+.Inputform {
+    display: flex;
+    justify-content: center;   /* 🔥 가로 중앙 정렬 */
+    align-items: center;       /* 세로 중앙 정렬 */
+
+    height: 50px;
+    border: 1px solid #939393;
+    border-radius: 5px;
+
+    margin: 5% 10%;
+    font-size: 20px;
+}
+
+/* p.info 자체를 flex로 만들어 내부 아이콘/텍스트/input까지 중앙 정렬 */
+.info {
+    display: flex;
+    align-items: center;
+    justify-content: center;   /* 🔥 내부 요소들 가로 중앙 정렬 */
+
+    width: 100%;
+    margin: 0;
+
+    /* 🔥 왼쪽으로 치우치던 패딩 제거 */
+    padding-left: 0;
+
+    font-size: 20px;
+    color: gray;
+}
+
+/* input 안 텍스트도 중앙 정렬 */
+.Inputform input {
+    border: none;
+    outline: none;
+    text-align: center;        /* 🔥 타이핑 글자도 중앙으로 */
+    margin-left: 8px;
+}
+
+.Input-container {
+	text-align: center;
+	
+}
+
+
+/*  input 내부 텍스트도 중앙 정렬 */
+input {
+    border: none;
+    outline: none;
+
+    /* 중앙 정렬 */
+    text-align: center;
+
+    /* input이 너무 좁아지는 경우 대비 */
+    width: 60%;
+}
+
+#submit {
+    display: block;
+    background-color: #939393;
+    color: white;
+    border-radius: 5px;
+    font-size: 20px;
+    width: 20%;
+    height: 50px;
+    margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+    .navbar-collapse.collapse {
+        display: none !important;
+    }
+}

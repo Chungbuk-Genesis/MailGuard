@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>프로필 페이지</title>
+
+    <!-- 부트스트랩 코드-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <style>
+        #submit {
+            display: block;
+            background-color: #939393;
+            color: white;
+            border-radius: 5px;
+            font-size: 20px;
+            width: 20%;
+            height: 50px;
+            padding: auto;
+            margin: 0 auto;
+        }
+
+        #delete-account-btn {
+            display: block;
+            background-color: #d9534f;
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+            width: 20%;
+            height: 45px;
+            padding: auto;
+            margin: 15px auto 0 auto;
+        }
+
+        footer { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-default">
+    <div class="container">
+        <div class="navbar-header ">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" th:href="@{/home}">MailGuard</a>
+        </div>
+
+        <div class="buttons navbar-right">
+            <ul class="nav navbar-nav" style="display:flex;align-items:center;height:100%;">
+                <li><a th:href="@{/profile}">profile</a></li>
+                <li style="margin-left: 10px;"><p style="margin:0;">logined as: <span th:text="${user.username}"></span></p></li>
+                <li style="margin-left: 10px;"><a th:href="@{/logout}">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<section id="profile" class="fluid-container"
+         style="margin:auto; padding-top:20px; width:80%; border-radius:10px; border:1px solid #c9c9c9;">
+
+    <!-- 제목 -->
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-9">
+            <h3 style="color:#989898">프로필 정보</h3>
+        </div>
+    </div>
+
+    <!-- 🔥 EditPage 스타일과 동일한 박스 -->
+    <div class="row">
+        <div class="col-sm-2"></div>
+
+        <div class="col-sm-9"
+             style="border-radius:10px; border:1px solid #c9c9c9; padding:20px 10% 20px 10%;">
+
+            <!-- 닉네임 -->
+            <div class="form-group">
+                <label><span class="glyphicon glyphicon-user"></span> 닉네임:</label>
+                <p class="form-control-static"><span th:text="${user.username}"></span></p>
+            </div>
+
+            <!-- 이메일 -->
+            <div class="form-group">
+                <label><span class="glyphicon glyphicon-envelope"></span> 이메일:</label>
+                <p class="form-control-static"><span th:text="${user.email}"></span></p>
+            </div>
+
+            <!-- 가입일 -->
+            <div class="form-group">
+                <label><span class="glyphicon glyphicon-calendar"></span> 가입일:</label>
+                <p class="form-control-static">
+                    <span th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd')}"></span>
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 수정 버튼 -->
+    <div style="text-align:center; padding-top:20px;">
+        <a th:href="@{/edit}" class="btn btn-default" id="submit">회원정보 수정</a>
+    </div>
+
+    <!-- 탈퇴 버튼 -->
+    <div style="text-align:center; padding-top:10px;">
+        <form th:action="@{/delete-account}" method="post"
+              onsubmit="return confirm('정말로 탈퇴하시겠습니까?');">
+            <button type="submit" id="delete-account-btn">회원 탈퇴</button>
+        </form>
+    </div>
+
+</section>
+
+<br><br><br>
+
+<footer class="container-fluid bg-3">
+    <!-- CONTACT 부분 그대로 유지 -->
+</footer>
+
+</body>
+</html>
