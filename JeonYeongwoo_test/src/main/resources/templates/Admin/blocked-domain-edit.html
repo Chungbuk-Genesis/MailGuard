@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>차단 도메인 수정</title>
+
+    <!-- 부트스트랩 코드-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <style>
+        #submit {
+            display: block;
+            background-color: #939393;
+            color: white;
+            border-radius: 5px;
+            font-size: 20px;
+            width: 20%;
+            height: 50px;
+            padding: auto;
+            margin: 0 auto;
+        }
+
+        #delete-account-btn {
+            display: block;
+            background-color: #d9534f;
+            color: white;
+            border-radius: 5px;
+            font-size: 16px;
+            width: 20%;
+            height: 45px;
+            padding: auto;
+            margin: 15px auto 0 auto;
+        }
+
+        footer { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<!-- 상단 Navbar (프로필 페이지와 동일) -->
+<nav class="navbar navbar-default">
+    <div class="container">
+        <div class="navbar-header ">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" th:href="@{/home}">MailGuard</a>
+        </div>
+
+        <div class="buttons navbar-right">
+            <ul class="nav navbar-nav" style="display:flex;align-items:center;height:100%;">
+                <li><a th:href="@{/profile}">profile</a></li>
+                <li style="margin-left: 10px;">
+                    <p style="margin:0;">logined as: <span th:text="${user.username}"></span></p>
+                </li>
+                <li style="margin-left: 10px;"><a th:href="@{/logout}">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- 메인 섹션 -->
+<section id="blocked-domain-edit" class="fluid-container"
+         style="margin:auto; padding-top:20px; width:80%; border-radius:10px; border:1px solid #c9c9c9;">
+
+    <!-- 제목 -->
+    <div class="row">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-9">
+            <h3 style="color:#989898">차단 도메인 수정</h3>
+        </div>
+    </div>
+
+    <!-- 내용 박스 -->
+    <div class="row">
+        <div class="col-sm-2"></div>
+
+        <div class="col-sm-9"
+             style="border-radius:10px; border:1px solid #c9c9c9; padding:20px 10% 20px 10%;">
+
+            <form th:action="@{|/admin/blocked-domains/edit/${domain.id}|}"
+                  th:object="${domain}"
+                  method="post">
+
+                <div class="form-group">
+                    <label>Scheme</label>
+                    <select th:field="*{scheme}" class="form-control">
+                        <option value="HTTP">HTTP</option>
+                        <option value="HTTPS">HTTPS</option>
+                        <option value="BOTH">BOTH</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Domain</label>
+                    <input th:field="*{domain}" class="form-control" required/>
+                </div>
+
+                <div class="form-group">
+                    <label>Source</label>
+                    <input th:field="*{source}" class="form-control"/>
+                </div>
+
+                <div class="form-group">
+                    <label>Note</label>
+                    <input th:field="*{note}" class="form-control"/>
+                </div>
+
+                <button type="submit" class="btn btn-primary">저장</button>
+                <a th:href="@{/admin/blocked-domains}" class="btn btn-default">뒤로</a>
+            </form>
+
+        </div>
+    </div>
+</section>
+
+<br><br><br>
+
+<footer class="container-fluid bg-3">
+    <!-- CONTACT 부분 그대로 유지 or 필요시 채우기 -->
+</footer>
+
+</body>
+</html>

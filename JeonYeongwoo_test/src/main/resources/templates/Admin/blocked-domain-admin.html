@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>차단 도메인 관리</title>
+
+    <!-- 부트스트랩 코드-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <style>
+        footer { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<!-- 상단 Navbar -->
+<nav class="navbar navbar-default">
+    <div class="container">
+        <div class="navbar-header ">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" th:href="@{/home}">MailGuard</a>
+        </div>
+
+        <div class="buttons navbar-right">
+            <ul class="nav navbar-nav" style="display:flex;align-items:center;height:100%;">
+                <li><a th:href="@{/profile}">profile</a></li>
+                <li style="margin-left: 10px;">
+                    <p style="margin:0;">logined as: <span th:text="${user.username}"></span></p>
+                </li>
+                <li style="margin-left: 10px;"><a th:href="@{/logout}">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<!-- 메인 컨텐츠 -->
+<section id="blocked-domains" class="container" style="padding-top:20px;">
+
+    <!-- 제목 -->
+    <div class="row">
+        <div class="col-sm-12 text-center">
+            <h3 style="color:#989898">차단 도메인 관리</h3>
+        </div>
+    </div>
+
+    <!-- 신규 등록 폼 -->
+    <form th:action="@{/admin/blocked-domains/add}" th:object="${newDomain}"
+          method="post" class="form-inline" style="margin: 20px 0; text-align:center;">
+
+        <div class="form-group">
+            <label>Scheme:&nbsp;</label>
+            <select th:field="*{scheme}" class="form-control">
+                <option value="HTTP">HTTP</option>
+                <option value="HTTPS">HTTPS</option>
+                <option value="BOTH">BOTH</option>
+            </select>
+        </div>
+
+        <div class="form-group" style="margin-left:10px;">
+            <label>Domain:&nbsp;</label>
+            <input th:field="*{domain}" class="form-control"
+                   placeholder="예: malicious.com" required/>
+        </div>
+
+        <div class="form-group" style="margin-left:10px;">
+            <label>Source:&nbsp;</label>
+            <input th:field="*{source}" class="form-control"
+                   placeholder="파일명(Optional)"/>
+        </div>
+
+        <div class="form-group" style="margin-left:10px;">
+            <label>Note:&nbsp;</label>
+            <input th:field="*{note}" class="form-control"
+                   placeholder="메모(Optional)"/>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-left:10px;">추가</button>
+    </form>
+
+    <!-- 목록 테이블 -->
+    <table class="table table-bordered table-striped table-hover" style="text-align:center;">
+        <thead>
+        <tr>
+            <th style="width:5%;">ID</th>
+            <th style="width:8%;">Scheme</th>
+            <th>Domain</th>
+            <th>Source</th>
+            <th>Note</th>
+            <th style="width:18%;">등록일</th>
+            <th style="width:7%;">수정</th>
+            <th style="width:7%;">삭제</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="d : ${domains}">
+            <td th:text="${d.id}"></td>
+            <td th:text="${d.scheme}"></td>
+            <td th:text="${d.domain}"></td>
+            <td th:text="${d.source}"></td>
+            <td th:text="${d.note}"></td>
+            <td th:text="${#temporals.format(d.createdAt, 'yyyy-MM-dd HH:mm')}"></td>
+
+            <td>
+                <a th:href="@{|/admin/blocked-domains/edit/${d.id}|}"
+                   class="btn btn-warning btn-sm">수정</a>
+            </td>
+
+            <td>
+                <form th:action="@{|/admin/blocked-domains/delete/${d.id}|}" method="post"
+                      onsubmit="return confirm('삭제하시겠습니까?');">
+                    <button class="btn btn-danger btn-sm">삭제</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+</section>
+
+
+<br><br><br>
+
+<footer class="container-fluid bg-3">
+</footer>
+
+</body>
+</html>

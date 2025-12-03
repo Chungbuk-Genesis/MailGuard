@@ -46,6 +46,13 @@ public class UrlSecurityService {
         blockedDomains = blockedDomainRepository.findAllDomains();
         System.out.println("✅ 차단 도메인 로드 완료: " + blockedDomains.size() + "개");
     }
+    
+    // 2025-12-02 캐시 로딩
+    public void reloadBlockedDomains() {
+        blockedDomains = blockedDomainRepository.findAllDomains();
+        log.info("🔄 차단 도메인 캐시 리로드됨 ({}개)", blockedDomains.size());
+    }
+
 
     public boolean isSafeUrl(String url) {
         if (url == null || url.trim().isEmpty()) {
