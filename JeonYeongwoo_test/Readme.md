@@ -1,5 +1,9 @@
+************* 2025-12-03 DB 쿼리 blocked-domain 부분에 수정 있으니까 참고해주세요 ********
 # 필독 Application.properties 설정
+
 카카오톡에 공유한 credentials.json 파일은 포함되지 않았습니다 << resources 위치에 넣어주세요
+
+
 
 Application.properties 파일의 설정을 아래와 같은 형태로 맞춰주세요요 
 
@@ -122,6 +126,18 @@ CREATE TABLE blocked_domain (
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_0900_ai_ci;
 
+-- db 드랍하고 다시 만들어주세요 순서 이 순서대로 실행 안하면 오류나요 fk 관계 있어서
+drop table email_verification_token;
+drop table oauth_tokens;
+drop table user;
+
+-- 유저 테이블
+CREATE DATABASE IF NOT EXISTS MailGuardDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; 
+USE MailGuardDB;
+
+drop table email_verification_token;
+drop table oauth_tokens;
+drop table user;
 
 -- 유저 테이블
 CREATE TABLE user (
@@ -131,7 +147,9 @@ CREATE TABLE user (
     email VARCHAR(100) UNIQUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     correct INT DEFAULT 0,
-    incorrect INT DEFAULT 0
+    incorrect INT DEFAULT 0,
+    enabled bit(1) DEFAULT 0,
+    admin_check boolean DEFAULT FALSE  -- 2025-12-03 admin 권한 업데이트
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 토큰 테이블
@@ -147,6 +165,12 @@ CREATE TABLE oauth_tokens (
     CONSTRAINT user_id
     FOREIGN KEY (user_id) REFERENCES user(id)
 );
+
+-- 여긴 username admin 으로 한 경우 실행해 주세요
+Update user
+Set admin_check = TRUE
+where username = 'admin';
+
 ```
 3. springboot 실행
 
@@ -224,6 +248,7 @@ MailGuard
 
 ... 추후 업데이트 하겠습니다
 -------------------------------------------------------------
+
 
 
 
