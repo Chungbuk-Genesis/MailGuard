@@ -46,6 +46,7 @@ public class UserService {
         // 3. 이메일 미인증 상태로 저장
         // System.out.println("이메일을 저장합니다 ");
         user.setEnabled(false);
+        user.setAdmin(false);
         userRepository.save(user);
 
         // 4. 이메일 인증 토큰 생성

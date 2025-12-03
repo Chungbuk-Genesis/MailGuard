@@ -45,6 +45,9 @@ public class User {
 
     private Integer incorrect = 0;
     
+    @Column(nullable = false)
+    private boolean admin_check = false;
+    
     
     // ✅ 이메일 인증 여부 (기본 false)
     @Column(nullable = false)
@@ -118,5 +121,17 @@ public class User {
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
+
+    // admin_check 세팅
+    public boolean getAdmin() {
+        return admin_check;
+    }
+    
+    
+    
+    public void setAdmin(boolean admin_check) {
+        this.admin_check = admin_check;
+    }
+    
 }
 
